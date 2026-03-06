@@ -32,8 +32,20 @@ def run_episode(agent, prices):
         next_state = step(state, action_kw=action)
 
         cost = grid_cost(action, price)
-
+        
         reward = -cost
+    # discourage selling with empty battery
+    if state.soc <= 0 and action < 0:
+        reward -= 200
+    # discourage charging when full
+    if state.soc >= 1 and action > 0:
+        reward -= 200
+    # encourage charging at low prices
+    if price < 6 and action > 0:
+        reward += 40
+    # encourage selling at high prices
+    if price > 11 and action < 0:
+        reward += 40
 
         next_state_key = agent.get_state(price, next_state.soc)
 
